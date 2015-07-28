@@ -5,8 +5,10 @@ require 'pry'
 # Computer puts O in another. 
 # They continue alternatively until its a tie or someone wins
 
+# sq is abbreviated for squares
+
 class Board
-  attr_accessor :sq, :empty_sq
+  attr_accessor :sq
 
   def initialize
     @sq = {}
@@ -23,7 +25,7 @@ class Board
   end
 
   def empty_sq
-    @empty_sq = @sq.select {|k,v| v == " "}.keys
+    sq.select {|_k,v| v == " "}.keys
   end
 
 end
@@ -41,7 +43,14 @@ class Game
 
   WINNING_LINES = [[1,2,3],[4,5,6],[7,8,9],[1,4,7],[2,5,8],[3,6,9],[1,5,9],[3,5,7]]
 
-  def play_again?
+  def initialize
+    @board = Board.new
+    @human = Player.new("Champ", "X")
+    @computer = Player.new("Computer", "O")
+    @current_player = @human
+  end
+
+  def play_again
     puts "Press P to play again. Any other key to exit."
     key = gets.chomp.downcase
     if key == "p"
@@ -69,23 +78,19 @@ class Game
   end
 
   def player_turn
-      if @current_player == @human
-        begin
-          puts "Choose an empty square to put X. Select from 1-9"
-          current_sq = gets.chomp.to_i
-        end until @board.empty_sq.include?(current_sq)
-      elsif @current_player == @computer
-        current_sq = @board.empty_sq.sample
-      end
-      @board.sq[current_sq] << @current_player.marker
+    if @current_player == @human
+      begin
+        puts "Choose an empty square to put X. Select from 1-9"
+        current_sq = gets.chomp.to_i
+      end until @board.empty_sq.include?(current_sq)
+    elsif @current_player == @computer
+      current_sq = @board.empty_sq.sample
+    end
+    @board.sq[current_sq] << @current_player.marker
   end
 
   def play
-    @board = Board.new
     @board.draw
-    @human = Player.new("Champ", "X")
-    @computer = Player.new("Computer", "O")
-    @current_player = @human
 
     loop do
       player_turn
@@ -100,8 +105,8 @@ class Game
         switch_player
       end
     end
-    
-    play_again?
+
+    play_again
   end
 end
 
