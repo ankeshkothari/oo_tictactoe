@@ -1,3 +1,5 @@
+require 'pry'
+
 # There is a board with 9 squares. 
 # Player puts X in one of the squares. 
 # Computer puts O in another. 
@@ -27,39 +29,55 @@ class Board
 end
 
 class Player
-  attr_accessor :player, :marker
+  attr_accessor :name, :marker
 
-  def initialize(player, marker)
-    @player = player
+  def initialize(name, marker)
+    @name = name
     @marker = marker
   end
 end
 
 class Game
 
+  WINNING_LINES = [[1,2,3],[4,5,6],[7,8,9],[1,4,7],[2,5,8],[3,6,9],[1,5,9],[3,5,7]]
+
+  def play_again?
+    puts "Press P to play again. Any other key to exit."
+    key = gets.chomp.downcase
+    if key == "p"
+      Game.new.play
+    else
+      puts "Bye!"
+    end
+  end
+
+  def check_win?
+    WINNING_LINES.each do |x, y, z|
+      if @board.sq[x] == @board.sq[y] && @board.sq[x] == @board.sq[z] && @board.sq[x] != " "
+        return true
+      end
+    end
+    false
+  end
+
   def switch_player
     if @current_player == @human
       @current_player = @computer
-    else
+    elsif @current_player == @computer
       @current_player = @human
     end
   end
 
   def player_turn
-    begin
       if @current_player == @human
         begin
           puts "Choose an empty square to put X. Select from 1-9"
           current_sq = gets.chomp.to_i
         end until @board.empty_sq.include?(current_sq)
-      else
+      elsif @current_player == @computer
         current_sq = @board.empty_sq.sample
       end
       @board.sq[current_sq] << @current_player.marker
-      @board.draw
-      switch_player
-    end until @board.empty_sq.empty?
-    puts "Its a tie!"
   end
 
   def play
@@ -68,11 +86,22 @@ class Game
     @human = Player.new("Champ", "X")
     @computer = Player.new("Computer", "O")
     @current_player = @human
-    player_turn
 
-    # sleep 3
-    # @board.sq[1] << "x"
-    # @board.draw
+    loop do
+      player_turn
+      @board.draw
+      if check_win?
+        puts "#{@current_player.name} wins!"
+        break
+      elsif @board.empty_sq.empty?
+        puts "Its a tie!"
+        break
+      else
+        switch_player
+      end
+    end
+    
+    play_again?
   end
 end
 
